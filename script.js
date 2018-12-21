@@ -1,6 +1,5 @@
 $(document).ready(function(){
   getCurrentPrice();
-  $('input[type="date"]').on('input', getHistoryRate);
   getLastMonth();
 });
 
@@ -38,27 +37,50 @@ function getLastMonth(){
     }, 100)
 }
 
-let start = document.querySelector("#date1");
-let end = document.querySelector("#date2");
 let labels = [];
 let mydata = []; 
 let mydata2 = []; 
+let today = new Date();
+let dd = today.getDate();
+let mm = today.getMonth()+1; //January is 0!
+let yyyy = today.getFullYear();
+if(dd<10) {
+    dd = '0'+dd
+} else if(mm<10) {
+    mm = '0'+mm
+} 
+
+let now = yyyy + "-" + mm + "-" + dd;
+
+function buildChart() {
+  if($('#date1').val() >= $('#date2').val()) {
+    alert("Вы ввели некоректные данные!");
+    $('#date1').val('');
+    $('#date2').val('');
+  }else if(($('#date1').val() || $('#date2').val()) > now) {
+    alert("Вы ввели некоректные данные! Выбранные даты не могут быть больше сегодняшнего числа");
+  } else {
+      getHistoryRate();
+  }
+}
+
+
 
 function getHistoryRate(){
-  $.getJSON("https://api.coindesk.com/v1/bpi/historical/close.json?currency=USD",
+    $.getJSON("https://api.coindesk.com/v1/bpi/historical/close.json?currency=USD",
       {
         "start" : $('#date1').val(),
         "end" : $('#date2').val()
       },
       function(data) {
         jsonfile = data;
-          for (var key in data.bpi) {
-            var value = data.bpi[key];
+          for (let key in data.bpi) {
+            let value = data.bpi[key];
             labels.push(key);
             mydata.push(value);
           }	
       });
-
+  
       $.getJSON("https://api.coindesk.com/v1/bpi/historical/close.json?currency=EUR",
       {
         "start" : $('#date1').val(),
@@ -66,7 +88,7 @@ function getHistoryRate(){
       },
      function(data) {
       jsonfile2 = data;
-        for (var key in data.bpi) {
+        for (let key in data.bpi) {
           let value2 = data.bpi[key];
           mydata2.push(value2);
         }
